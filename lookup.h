@@ -509,7 +509,7 @@ Q_GLOBA4:
     }
     return 0;
 
-    // ---------- ELSE / END / ERROR / RETURN ----------
+    // ---------- ELSE / END / ERROR ----------
 Q_E0:
     i = 1; c = s[i];
     if (c == 'l') goto Q_EL1; // else
@@ -695,7 +695,7 @@ Q_MAI2:
     }
     return 0;
 
-    // ---------- PLEASE (noise) / PRINT (not requested) ----------
+    // ---------- PLEASE (noise) ----------
 Q_P0:
     i = 1; c = s[i];
     if (c == 'l') goto Q_PL1;

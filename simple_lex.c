@@ -86,7 +86,7 @@ static void add_symbol(const char *lex, SymType type, int line, int col) {
             ++errcount;
         }
     }
-    /* Update prev token only for meaningful tokens — don't let whitespace/newline/comment overwrite context */
+    /* Don't let whitespace/newline/comment overwrite context */
     if (type != T_WHITESPACE && type != T_NEWLINE && type != T_COMMENT) {
         update_prev_token(lex, type);
     }
@@ -115,8 +115,7 @@ static int write_symbol_table_to_path(const char *outpath) {
         const char *tok;
         SymType t = symtab[i].type;
 
-        /* STYLE-F: for keywords/reserved/noise, for ALL operator types, and for SIMPLE delimiters,
-           print the token column as the lexeme itself (e.g. "if", "+", "==", "(", ",", ":"). */
+        /* For SIMPLE keywords/reserved/noise, for ALL operator types, and for delimiters, print the token column as the lexeme itself */
         if (t == T_KEYWORD || t == T_RESERVED || t == T_NOISE ||
             t == T_ARITH_OP || t == T_UNARY_OP || t == T_REL_OP ||
             t == T_LOGICAL_OP || t == T_ASSIGN_OP || t == T_EXP_OP ||
@@ -134,8 +133,7 @@ static int write_symbol_table_to_path(const char *outpath) {
                 symtab[i].line, symtab[i].col, tok, symtab[i].lex);
     }
 
-    /* Token Summary removed as requested. Keep only error listing. */
-
+    /*Error listing. */
     fprintf(f, "\nErrors (%d):\n", errcount);
     if (errcount == 0) fprintf(f, "  (none)\n");
     else {
