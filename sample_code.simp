@@ -1,0 +1,161 @@
+// Simple if
+if temperature > 30:
+    show "It's a hot day."
+end if
+
+// If-else
+if score >= 50:
+    show "You passed!"
+else:
+    show "Please try again."
+end if
+
+// Nested if-else-if
+if grade == "A":
+    show "Excellent!"
+else if grade == "B":
+    show "Good job!"
+else if grade == "C":
+    show "Well done."
+else:
+    show "Needs improvement."
+end if;
+
+object main
+
+    a = 10
+    b += 5
+    c -= 3
+    d *= 2
+    e /= 4
+    f %= 2
+    g ~= 3
+
+    if a < b then
+        show "a is less than b"
+    end
+
+    if a > b then
+        show "a is greater than b"
+    end
+
+    if a <= b then
+        show "a <= b"
+    end
+
+    if a >= b then
+        show "a >= b"
+    end
+
+    if a == b then
+        show "a equals b"
+    end
+
+    if a != b then
+        show "a is not equal to b"
+    end
+
+    
+    if !false then
+        show "NOT works"
+    end
+
+    if true && false then
+        show "AND works"
+    end
+
+    if true || false then
+        show "OR works"
+    end
+
+    x = a + b
+    y = a - b
+    z = a * b
+    p = a / b
+    q = a % b
+    r = a ~ b
+    s = a ^ b
+
+    i = -5
+    j = +7
+
+    ++i
+    --j
+
+end;
+
+
+/*For KeyWords*/
+int counter = 0
+float price = 12.5
+char letter = "A"
+string name = "SIMPLE"
+text message = "HelloWorld123!"
+secure password = "admin123"
+bool isActive = true
+time currentTime = "12:00:00"
+date currentDate = "2025-11-04"
+timestamp logTime = "2025-11-04 12:00:00"
+array numbers = [1, 2, 3, 4, 5]
+collection words = ["apple", "banana", "cherry"]
+
+global totalCount = 100
+local tempValue = 10
+
+let variableA = 5
+store constantB = 10
+
+get userInput
+show "You entered: " + userInput
+
+if isActive == true
+    show "System is active."
+else
+    show "System is inactive."
+end
+
+do
+    counter += 1
+    if counter == 3
+        next
+    end
+    show "Counter: " + counter
+end
+
+to do computeTotal(a, b)
+    return a + b
+end
+
+try
+    show "Attempting risky operation..."
+    result = 10 / 0
+handle
+    show "Error handled successfully."
+end
+
+show "Program finished."
+
+
+int a = 10
+float b = 20.5
+
+to add please do
+    c = a + b
+then
+    print(c)
+end
+
+object main
+    system = "SIMPLE Lexical Analyzer"
+    for i = 0 to 5
+        show "Iteration number: " + i
+    end
+
+    let value = null
+    if value == null then
+        error = "Null value detected"
+        show error
+    end
+
+    exit
+end;
