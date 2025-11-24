@@ -1,2 +1,2 @@
 
-    prev_type = T_NEWLINE;
+    cur_line = 1;

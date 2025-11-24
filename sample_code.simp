@@ -159,3 +159,31 @@ object main
 
     exit
 end;
+
+object main
+    // === CONSTANT VALUES TEST ===
+
+    int    wholeNum = 10
+    float  piValue  = 3.14159
+    char   letter   = 'A'
+    string message  = "Hello World"
+
+    text description = """
+This is a TEXT literal. It supports multiple lines.It includes ASCII characters: !@#$%^&*()
+"""
+
+    secure password = `MySecureKey123`
+
+    bool flagTrue  = true
+    bool flagFalse = false
+
+    time nowTime = 14:25:56
+    date today   = 2025-11-24
+    timestamp logEntry = 2025-11-24 14:26:00
+
+    array numbers = [1, 2, 3, 4, 5]
+    collection words = {"alpha", "beta", "gamma"}
+
+    // End of constant test
+end
+
