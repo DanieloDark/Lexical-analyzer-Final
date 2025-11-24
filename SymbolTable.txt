@@ -524,7 +524,9 @@
     99 |     14 | WHITESPACE      |  
     99 |     15 | ASSIGN_OP       | =
     99 |     16 | WHITESPACE      |  
-    99 |     17 | ARRAY           | 1, 2, 3, 4, 5
+    99 |     17 | LBRACKET        | [
+    99 |     18 | ARRAY           | 1, 2, 3, 4, 5
+    99 |     31 | RBRACKET        | ]
     99 |      1 | NEWLINE         | \n
    100 |      1 | DATATYPE        | collection
    100 |     11 | WHITESPACE      |  
@@ -532,7 +534,9 @@
    100 |     17 | WHITESPACE      |  
    100 |     18 | ASSIGN_OP       | =
    100 |     19 | WHITESPACE      |  
-   100 |     20 | ARRAY           | "apple", "banana", "cherry"
+   100 |     20 | LBRACKET        | [
+   100 |     21 | ARRAY           | "apple", "banana", "cherry"
+   100 |     48 | RBRACKET        | ]
    100 |      1 | NEWLINE         | \n
    101 |      1 | NEWLINE         | \n
    102 |      1 | IDENTIFIER      | global
@@ -938,7 +942,9 @@ This is a TEXT literal. It supports multiple lines.It includes ASCII characters:
    184 |     18 | WHITESPACE      |  
    184 |     19 | ASSIGN_OP       | =
    184 |     20 | WHITESPACE      |  
-   184 |     21 | ARRAY           | 1, 2, 3, 4, 5
+   184 |     21 | LBRACKET        | [
+   184 |     22 | ARRAY           | 1, 2, 3, 4, 5
+   184 |     35 | RBRACKET        | ]
    184 |      1 | NEWLINE         | \n
    185 |      1 | WHITESPACE      |     
    185 |      5 | DATATYPE        | collection
@@ -962,19 +968,37 @@ NEWLINE     : 182
 KEYWORD     : 85
 WHITESPACE  : 338
 IDENTIFIER  : 102
-REL_OP      : 14
+STRING      : 37
+TEXT        : 1
+SECURE      : 1
+CHAR        : 1
+BOOL        : 9
 INT         : 24
 FLOAT       : 3
-CHAR        : 1
-STRING      : 37
-DATATYPE    : 27
+TIME        : 1
+DATE        : 1
+TIMESTAMP   : 1
 ARRAY       : 3
 COLLECTION  : 1
-LEXICAL_ERROR: 3
+REL_OP      : 14
+ASSIGN_OP   : 54
+ARITH_OP    : 12
+LOGICAL_OP  : 3
+UNARY_OP    : 4
+EXP_OP      : 1
+COLON       : 5
+COMMA       : 1
+LPAREN      : 2
+RPAREN      : 2
+LBRACKET    : 3
+RBRACKET    : 3
+DATATYPE    : 27
+NOISE       : 14
 RESERVED    : 12
+LEXICAL_ERROR: 3
 
-Total tokens (including whitespace/newlines): 950
-Total tokens (excluding whitespace/newlines): 430
+Total tokens (including whitespace/newlines): 956
+Total tokens (excluding whitespace/newlines): 436
 
 Errors (3):
   - Invalid token ';' at line 22, col 7

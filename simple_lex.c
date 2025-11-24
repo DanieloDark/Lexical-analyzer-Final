@@ -1,4 +1,4 @@
-// simple_lex.c
+// simple_lex.c 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -136,10 +136,26 @@ static int write_symbol_table_to_path(const char *outpath) {
 
     /* Print the most important tokens (selective) */
     const SymType order[] = {
-        T_COMMENT, T_NEWLINE, T_KEYWORD, T_WHITESPACE, T_IDENTIFIER,
-        T_REL_OP, T_INT, T_FLOAT, T_CHAR, T_STRING,
-        T_DATATYPE, T_ARRAY, T_COLLECTION, T_LEX_ERROR, T_RESERVED
-    };
+    T_COMMENT, T_NEWLINE, T_KEYWORD, T_WHITESPACE, T_IDENTIFIER,
+
+    /* Literals */
+    T_STRING, T_TEXT, T_SECURE, T_CHAR, T_BOOL,
+
+    /* Numeric / temporal */
+    T_INT, T_FLOAT, T_TIME, T_DATE, T_TIMESTAMP,
+
+    /* Structures */
+    T_ARRAY, T_COLLECTION,
+
+    /* Operators */
+    T_REL_OP, T_ASSIGN_OP, T_ARITH_OP, T_LOGICAL_OP, T_UNARY_OP, T_EXP_OP,
+
+    /* Delimiters */
+    T_COLON, T_COMMA, T_LPAREN, T_RPAREN, T_LBRACKET, T_RBRACKET,
+
+    /* Other classifications */
+    T_DATATYPE, T_NOISE, T_RESERVED, T_LEX_ERROR
+};
     const int order_len = sizeof(order)/sizeof(order[0]);
 
     for (int i = 0; i < order_len; ++i)
@@ -259,9 +275,7 @@ static bool looks_like_date_iso(const char *s) {
    If not closed properly, returns NULL.
 */
 static char *read_until(FILE *f, int *out_line, int *out_col, int delim, int allow_escape) {
-    // This helper assumes getch() and file are in proper state; but we won't reuse it heavily because we need to use getch/ungetch and current pos.
     (void)f; // unused but kept for signature consistency
-    // Not used in this code - kept for possible extension.
     return NULL;
 }
 
@@ -458,22 +472,18 @@ int main(void) {
                 if (esc == EOF) { add_symbol("", T_LEX_ERROR, start_line, start_col); continue; }
                 // accept escaped single char like '\n', '\'', '\\'
                 if (bi < (int)sizeof(buf)-1) buf[bi++] = (char)ch, buf[bi++] = (char)esc;
-                ch = getch(); // should be closing '
+                ch = getch(); // should be closing ''
                 if (ch != '\'') { add_symbol("", T_LEX_ERROR, start_line, start_col); continue; }
                 buf[bi] = '\0';
                 add_symbol(buf, T_CHAR, start_line, start_col);
                 continue;
             } else {
-                // single character then expect closing '
+                // single character then expect closing '\''
                 int closing = getch();
                 if (closing != '\'') {
-                    // malformed char literal (maybe multi-char) -> treat as identifier or error
-                    // we will roll back (put back any extra read) and treat starting quote as lex error
-                    // But since we've consumed next chars, the simplest is to mark lex error
                     add_symbol("", T_LEX_ERROR, start_line, start_col);
                     continue;
                 } else {
-                    // ch is the character
                     char out[4] = {0};
                     out[0] = (char)ch;
                     out[1] = '\0';
@@ -483,26 +493,58 @@ int main(void) {
             }
         }
 
-        /* NUMBER / DATE / TIME / TIMESTAMP / ARRAY / COLLECTION handling */
-
-        /* ARRAYS: [ ... ] => ARRAY (inner content as lexeme) */
+        /* BRACKET / ARRAY handling: decide whether ARRAY literal or LBRACKET delimiter */
         if (c == '[') {
-            char buf[MAX_LEX];
-            int bi = 0;
-            int depth = 1;
-            int ch;
-            bool closed = false;
-            while ((ch = getch()) != EOF) {
-                if (ch == '[') { depth++; if (bi < MAX_LEX-1) buf[bi++] = (char)ch; }
-                else if (ch == ']') { depth--; if (depth == 0) { closed = true; break; } else if (bi < MAX_LEX-1) buf[bi++] = (char)ch; }
-                else {
-                    if (bi < MAX_LEX-1) buf[bi++] = (char)ch;
-                }
+            /* Peek ahead skipping spaces/tabs to inspect next non-space character */
+            int look;
+            char saved[256]; int si = 0;
+            while ((look = peekch()) != EOF && (look == ' ' || look == '\t')) {
+                getch();
+                if (si < 255) saved[si++] = (char)look;
             }
-            buf[bi] = '\0';
-            if (!closed) add_symbol(buf, T_LEX_ERROR, start_line, start_col);
-            else add_symbol(buf, T_ARRAY, start_line, start_col);
-            continue;
+            int next_non_ws = peekch();
+            /* restore consumed whitespace */
+            for (int i = si - 1; i >= 0; --i) ungetch(saved[i]);
+
+            /* Heuristic: treat as ARRAY literal when next non-space char is one typical of literals
+               or if it's a closing ']' (empty array) */
+            if (next_non_ws == ']' || isdigit(next_non_ws) || next_non_ws == '"' || next_non_ws == '\'' ||
+                next_non_ws == '`' || next_non_ws == '{' || next_non_ws == '[' || next_non_ws == '-' ) {
+
+                /* Emit LBRACKET token first so brackets are visible in symbol table */
+                add_symbol("[", T_LBRACKET, start_line, start_col);
+
+                char buf[MAX_LEX]; int bi = 0;
+                int depth = 1;
+                int ch;
+                bool closed = false;
+                while ((ch = getch()) != EOF) {
+                    if (ch == '[') { depth++; if (bi < MAX_LEX-1) buf[bi++] = (char)ch; }
+                    else if (ch == ']') {
+                        depth--;
+                        if (depth == 0) { closed = true; break; }
+                        else if (bi < MAX_LEX-1) buf[bi++] = (char)ch;
+                    }
+                    else {
+                        if (bi < MAX_LEX-1) buf[bi++] = (char)ch;
+                    }
+                }
+                buf[bi] = '\0';
+                if (!closed) {
+                    add_symbol(buf, T_LEX_ERROR, start_line, start_col);
+                } else {
+                    /* add ARRAY inner content as a token (for analysis) */
+                    if (buf[0] != '\0') add_symbol(buf, T_ARRAY, start_line, start_col + 1);
+                    else add_symbol("", T_ARRAY, start_line, start_col + 1);
+                    /* Emit RBRACKET token at current position */
+                    add_symbol("]", T_RBRACKET, cur_line, cur_col);
+                }
+                continue;
+            } else {
+                /* Treat it as simple LBRACKET delimiter */
+                add_symbol("[", T_LBRACKET, start_line, start_col);
+                continue;
+            }
         }
 
         /* COLLECTIONS: { ... } => COLLECTION (inner content as lexeme) */
@@ -557,14 +599,11 @@ int main(void) {
                     strncpy(left, buf, li); left[li] = '\0';
                     strncpy(right, sp+1, sizeof(right)-1); right[sizeof(right)-1] = '\0';
                     if (looks_like_date_iso(left) && looks_like_time(right)) {
-                        // Return lexeme as "YYYY-MM-DD HH:MM[:SS]" (we have full buf)
                         add_symbol(buf, T_TIMESTAMP, start_line, start_col);
                         continue;
                     } else {
-                        // If not match, fallback to lex error or date if date part ok
                         if (looks_like_date_iso(left)) {
                             add_symbol(left, T_DATE, start_line, start_col);
-                            // put back remainder (right) into stream character by character
                             for (int i = (int)strlen(right)-1; i >= 0; --i) ungetch(right[i]);
                             continue;
                         } else {
@@ -573,7 +612,6 @@ int main(void) {
                         }
                     }
                 } else {
-                    // plain date
                     add_symbol(buf, T_DATE, start_line, start_col);
                     continue;
                 }
@@ -587,7 +625,6 @@ int main(void) {
 
             // If contains '.' => float
             if (strchr(buf, '.') != NULL) {
-                // ensure there's at least one digit before/after dot
                 add_symbol(buf, T_FLOAT, start_line, start_col);
                 continue;
             }
@@ -756,12 +793,11 @@ int main(void) {
             continue;
         }
 
-        /* DELIMITERS */
+        /* DELIMITERS (other than brackets) */
         if (c == ':') { add_symbol(":", T_COLON, start_line, start_col); continue; }
         if (c == ',') { add_symbol(",", T_COMMA, start_line, start_col); continue; }
         if (c == '(') { add_symbol("(", T_LPAREN, start_line, start_col); continue; }
         if (c == ')') { add_symbol(")", T_RPAREN, start_line, start_col); continue; }
-        if (c == '[') { add_symbol("[", T_LBRACKET, start_line, start_col); continue; }
         if (c == ']') { add_symbol("]", T_RBRACKET, start_line, start_col); continue; }
 
         /* UNKNOWN CHARACTER -> lexical error */
